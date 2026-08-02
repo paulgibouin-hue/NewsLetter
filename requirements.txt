@@ -1,4 +1,4 @@
 feedparser
-mistralai
+mistralai==1.5.2
 markdown
 requests
