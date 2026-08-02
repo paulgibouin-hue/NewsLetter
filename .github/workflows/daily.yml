@@ -1,0 +1,33 @@
+name: Tech Daily Newsletter
+
+on:
+  schedule:
+    - cron: "0 7 * * *"  # tous les jours à 7h UTC — ajuste selon ton fuseau
+  workflow_dispatch: {}   # permet aussi de le lancer manuellement depuis GitHub
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Générer la newsletter
+        env:
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python main.py
+
+      - name: Commit et push de l'archive
+        run: |
+          git config user.name "tech-daily-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add newsletters/
+          git commit -m "Newsletter du $(date +'%Y-%m-%d')" || echo "Rien à commit"
+          git push

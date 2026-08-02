@@ -1,0 +1,4 @@
+feedparser
+mistralai
+markdown
+requests
