@@ -32,8 +32,10 @@ MAX_ARTICLES = 40
 # Modèle Mistral à utiliser (API gratuite sur console.mistral.ai)
 MISTRAL_MODEL = "mistral-large-latest"
 
-# Dossier où sont stockées les newsletters générées (sert de "plateforme" d'archives)
-OUTPUT_DIR = "newsletters"
+# Dossier où sont stockées les newsletters générées (sert de "plateforme" d'archives).
+# "docs" et non "newsletters" : c'est l'un des deux seuls dossiers que GitHub Pages
+# accepte en source de publication (avec la racine du repo).
+OUTPUT_DIR = "docs"
 
 # Webhook Discord (optionnel) — laisser vide si tu ne veux pas l'utiliser
 import os
