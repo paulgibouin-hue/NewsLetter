@@ -3,6 +3,8 @@
 Un agent qui récupère chaque jour les actus tech (via RSS), les fait résumer par Mistral,
 et génère une page HTML archivée. Sert de newsletter **et** de mini-plateforme consultable.
 
+**Page d'accueil (archives) : https://paulgibouin-hue.github.io/NewsLetter/**
+
 ## Installation locale
 
 ```bash
@@ -29,6 +31,8 @@ qui liste toutes les newsletters passées (ouvre-le dans un navigateur).
 
 Le workflow `.github/workflows/daily.yml` fait tourner le script chaque jour à 7h UTC
 via GitHub Actions, et commit automatiquement la newsletter du jour dans le repo.
+C'est déjà configuré et actif sur ce repo (secret `MISTRAL_API_KEY`, GitHub Pages sur
+`docs/`) — les étapes ci-dessous servent de référence si tu redéploies ailleurs.
 
 Étapes :
 1. Pousse ce dossier dans un repo GitHub.
