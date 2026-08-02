@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tech Daily — Archives</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --text: #1a1a1a;
+    --text-muted: #777;
+    --accent: #ff5c35;
+    --link: #0066cc;
+    --border: #e2e2e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15130f;
+      --text: #e9e6e1;
+      --text-muted: #948e84;
+      --accent: #ff8360;
+      --link: #6cb3ff;
+      --border: #33302a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: var(--text);
+    background: var(--bg);
+  }
+  h1 { border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
+  ul { list-style: none; padding: 0; margin: 1.5em 0 0; }
+  li { border-bottom: 1px solid var(--border); }
+  li a { display: block; padding: 14px 0; color: var(--text); text-decoration: none; }
+  li a:hover .entry-date { color: var(--link); }
+  .entry-date { font-size: 1.05em; font-weight: 600; text-transform: capitalize; }
+  .entry-keywords { font-size: 0.9em; color: var(--text-muted); margin-top: 4px; }
+  @media (max-width: 600px) {
+    body { margin: 20px auto; padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+<h1>Tech Daily — Archives</h1>
+<ul>
+  <li><a href="2026-08-02.html">
+    <div class="entry-date">2 août 2026</div>
+    <div class="entry-keywords">Apple · Microsoft · UE · Google · Sam</div>
+  </a></li>
+</ul>
+</body>
+</html>
