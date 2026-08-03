@@ -3,6 +3,8 @@ Récupère les derniers articles tech depuis les flux RSS définis dans config.p
 filtre par fenêtre temporelle et déduplique.
 """
 
+import json
+import os
 import re
 import time
 from datetime import datetime, timezone, timedelta
@@ -12,6 +14,49 @@ import feedparser
 from config import FEEDS, HOURS_WINDOW, MAX_ARTICLES, MAX_PER_FEED
 
 _IMG_TAG_RE = re.compile(r'<img[^>]+src="([^"]+)"')
+
+# Mémoire des articles déjà publiés dans une précédente édition, pour ne jamais
+# répéter un même article d'un jour sur l'autre (HOURS_WINDOW couvre plusieurs
+# exécutions successives, donc un article peut rester "récent" deux jours de suite).
+PUBLISHED_LINKS_FILE = "published_links.json"
+PUBLISHED_LINKS_MAX_AGE_DAYS = 7  # au-delà, HOURS_WINDOW ne les reverra plus de toute façon
+
+
+def _load_published_links():
+    if not os.path.exists(PUBLISHED_LINKS_FILE):
+        return {}
+    with open(PUBLISHED_LINKS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _prune_published_links(published):
+    cutoff = datetime.now(timezone.utc) - timedelta(days=PUBLISHED_LINKS_MAX_AGE_DAYS)
+    pruned = {}
+    for link, published_at in published.items():
+        try:
+            if datetime.fromisoformat(published_at) >= cutoff:
+                pruned[link] = published_at
+        except ValueError:
+            continue
+    return pruned
+
+
+def mark_articles_published(links):
+    """Enregistre les liens effectivement publiés aujourd'hui, pour éviter les répétitions futures."""
+    published = _prune_published_links(_load_published_links())
+    now = datetime.now(timezone.utc).isoformat()
+    for link in links:
+        published[link] = now
+
+    with open(PUBLISHED_LINKS_FILE, "w", encoding="utf-8") as f:
+        json.dump(published, f, indent=2, ensure_ascii=False)
+
+
+def extract_used_links(markdown_text, articles):
+    """Parmi les articles proposés, renvoie ceux dont le lien apparaît réellement
+    dans la newsletter générée (seuls ceux-là doivent être marqués comme publiés)."""
+    return [a["link"] for a in articles if f"({a['link']})" in markdown_text]
+
 
 # Le CDN de la BBC sert une miniature basse résolution par défaut (souvent 240px de
 # large), mais accepte n'importe quelle taille dans l'URL : on demande la plus grande.
@@ -79,6 +124,7 @@ def fetch_articles():
     triée du plus récent au plus ancien, limitée à MAX_ARTICLES.
     """
     cutoff = datetime.now(timezone.utc) - timedelta(hours=HOURS_WINDOW)
+    published_links = _load_published_links()
     seen_links = set()
     articles = []
 
@@ -87,7 +133,7 @@ def fetch_articles():
         parsed = feedparser.parse(feed["url"])
         for entry in parsed.entries:
             link = entry.get("link")
-            if not link or link in seen_links:
+            if not link or link in seen_links or link in published_links:
                 continue
 
             published = _entry_datetime(entry)

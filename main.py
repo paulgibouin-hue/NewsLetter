@@ -4,7 +4,7 @@ Point d'entrée : à lancer une fois par jour (cron / GitHub Actions).
 Pipeline : fetch RSS -> résumé Mistral -> rendu HTML (archive) -> envoi Discord (optionnel)
 """
 
-from fetch import fetch_articles
+from fetch import fetch_articles, extract_used_links, mark_articles_published
 from summarize import generate_newsletter
 from render import render_newsletter
 from send_discord import send_to_discord
@@ -21,6 +21,10 @@ def run():
     print("3/4 — Rendu HTML et archivage...")
     filepath = render_newsletter(newsletter_md, articles=articles)
     print(f"   -> Newsletter sauvegardée : {filepath}")
+
+    used_links = extract_used_links(newsletter_md, articles)
+    mark_articles_published(used_links)
+    print(f"   -> {len(used_links)} articles marqués comme publiés (ne seront plus repris)")
 
     print("4/4 — Envoi Discord (si configuré)...")
     send_to_discord(newsletter_md)
