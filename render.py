@@ -123,10 +123,25 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
     background: var(--bg);
   }}
   h1 {{ border-bottom: 3px solid var(--accent); padding-bottom: 10px; }}
+  #search {{
+    display: block;
+    width: 100%;
+    margin: 1.2em 0 0;
+    padding: 10px 14px;
+    font-size: 1em;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }}
+  #search:focus {{ outline: none; border-color: var(--accent); }}
+  #no-results {{ display: none; color: var(--text-muted); margin-top: 1.5em; }}
   ul {{ list-style: none; padding: 0; margin: 1.5em 0 0; }}
   li {{ border-bottom: 1px solid var(--border); }}
   li a {{ display: block; padding: 14px 0; color: var(--text); text-decoration: none; }}
   li a:hover .entry-date {{ color: var(--link); }}
+  li.hidden {{ display: none; }}
   .entry-date {{ font-size: 1.05em; font-weight: 600; text-transform: capitalize; }}
   .entry-keywords {{ font-size: 0.9em; color: var(--text-muted); margin-top: 4px; }}
   @media (max-width: 600px) {{
@@ -136,9 +151,33 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <h1>Tech Daily — Archives</h1>
-<ul>
+<input type="search" id="search" placeholder="Rechercher (ex: Apple, régulation...)" aria-label="Rechercher une newsletter">
+<ul id="entries">
 {items}
 </ul>
+<p id="no-results">Aucune newsletter ne correspond à cette recherche.</p>
+<script>
+  const searchInput = document.getElementById("search");
+  const entries = Array.from(document.querySelectorAll("#entries li"));
+  const noResults = document.getElementById("no-results");
+
+  function normalize(text) {{
+    return text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }}
+
+  searchInput.addEventListener("input", () => {{
+    const query = normalize(searchInput.value.trim());
+    let visibleCount = 0;
+
+    entries.forEach((entry) => {{
+      const matches = normalize(entry.textContent).includes(query);
+      entry.classList.toggle("hidden", !matches);
+      if (matches) visibleCount += 1;
+    }});
+
+    noResults.style.display = visibleCount === 0 ? "block" : "none";
+  }});
+</script>
 </body>
 </html>
 """
