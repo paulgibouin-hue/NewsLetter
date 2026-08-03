@@ -3,6 +3,7 @@ Convertit le Markdown généré par Mistral en une page HTML stylée,
 et l'enregistre dans le dossier d'archives (base de la future "plateforme").
 """
 
+import html
 import os
 import re
 from datetime import date
@@ -11,6 +12,11 @@ from urllib.parse import urlparse
 import markdown as md
 
 from config import OUTPUT_DIR
+
+# URL publique du site (GitHub Pages) : sert à construire les balises Open Graph,
+# qui exigent des URLs absolues (aperçus de lien Discord, Twitter, iMessage...).
+# À changer si le repo ou le nom d'utilisateur GitHub changent un jour.
+BASE_URL = "https://paulgibouin-hue.github.io/NewsLetter"
 
 MONTHS_FR = [
     "janvier", "février", "mars", "avril", "mai", "juin",
@@ -26,6 +32,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tech Daily — {date}</title>
+<meta name="description" content="{description}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tech Daily — {date}">
+<meta property="og:description" content="{description}">
+<meta property="og:image" content="{base_url}/og-image.png">
+<meta property="og:url" content="{base_url}/{filename}">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root {{
     --bg: #fafafa;
@@ -94,6 +107,13 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tech Daily — Archives</title>
+<meta name="description" content="Grandes entreprises tech et actualité géopolitique, résumées chaque jour par IA.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tech Daily — Archives">
+<meta property="og:description" content="Grandes entreprises tech et actualité géopolitique, résumées chaque jour par IA.">
+<meta property="og:image" content="{base_url}/og-image.png">
+<meta property="og:url" content="{base_url}/">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root {{
     --bg: #fafafa;
@@ -218,6 +238,15 @@ def _insert_article_images(markdown_text, articles):
     return "".join(add_image(section) for section in sections)
 
 
+def _extract_description(markdown_text, limit=200):
+    """Récupère le paragraphe "En bref" pour servir de résumé (balises meta/Open Graph)."""
+    match = re.search(r"## En bref\s*\n+(.+?)(?:\n{2,}|\n##|\Z)", markdown_text, flags=re.DOTALL)
+    text = match.group(1) if match else markdown_text
+    text = re.sub(r"[*_`\[\]]", "", text).replace("\n", " ").strip()
+    text = text[:limit].rsplit(" ", 1)[0] + "…" if len(text) > limit else text
+    return html.escape(text, quote=True)
+
+
 def render_newsletter(markdown_text, output_dir=None, articles=None):
     """
     Génère le fichier HTML du jour + met à jour l'index des archives.
@@ -225,6 +254,8 @@ def render_newsletter(markdown_text, output_dir=None, articles=None):
     """
     output_dir = output_dir or OUTPUT_DIR
     os.makedirs(output_dir, exist_ok=True)
+
+    description = _extract_description(markdown_text)
 
     if articles:
         markdown_text = _insert_article_images(markdown_text, articles)
@@ -234,7 +265,13 @@ def render_newsletter(markdown_text, output_dir=None, articles=None):
     filepath = os.path.join(output_dir, filename)
 
     content_html = md.markdown(markdown_text)
-    full_html = HTML_TEMPLATE.format(date=today, content=content_html)
+    full_html = HTML_TEMPLATE.format(
+        date=today,
+        content=content_html,
+        description=description,
+        base_url=BASE_URL,
+        filename=filename,
+    )
 
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(full_html)
@@ -293,4 +330,4 @@ def _update_index(output_dir):
 
     items = "\n".join(entries)
     with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
-        f.write(INDEX_TEMPLATE.format(items=items))
+        f.write(INDEX_TEMPLATE.format(items=items, base_url=BASE_URL))
