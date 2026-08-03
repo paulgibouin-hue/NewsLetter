@@ -5,8 +5,9 @@ Configuration du projet : sources RSS et paramètres généraux.
 # Sources RSS tech (tu peux en ajouter/enlever librement)
 FEEDS = [
     {"name": "TechCrunch", "url": "https://techcrunch.com/feed/"},
+    {"name": "Le Monde", "url": "https://www.lemonde.fr/pixels/rss_full.xml"},
     {"name": "The Verge", "url": "https://www.theverge.com/rss/index.xml"},
-    {"name": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index"},
+    {"name": "Ars Technica", "url": "http s://feeds.arstechnica.com/arstechnica/index"},
     {"name": "Wired", "url": "https://www.wired.com/feed/rss"},
     {"name": "Hacker News (top)", "url": "https://hnrss.org/frontpage"},
     {"name": "The Next Web", "url": "https://thenextweb.com/feed"},
