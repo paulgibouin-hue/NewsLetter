@@ -107,10 +107,10 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tech Daily — Archives</title>
-<meta name="description" content="Grandes entreprises tech et actualité géopolitique, résumées chaque jour par IA.">
+<meta name="description" content="Grandes entreprises tech et actualité géopolitique, résumées chaque jour.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Tech Daily — Archives">
-<meta property="og:description" content="Grandes entreprises tech et actualité géopolitique, résumées chaque jour par IA.">
+<meta property="og:description" content="Grandes entreprises tech et actualité géopolitique, résumées chaque jour.">
 <meta property="og:image" content="{base_url}/og-image.png">
 <meta property="og:url" content="{base_url}/">
 <meta name="twitter:card" content="summary_large_image">
