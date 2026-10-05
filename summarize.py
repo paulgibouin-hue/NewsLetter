@@ -4,9 +4,21 @@ de type newsletter (introduction + points clés par article + pourquoi ça compt
 """
 
 import os
+import time
+
 from mistralai import Mistral
+from mistralai.models import SDKError
 
 from config import MISTRAL_MODEL
+
+# Codes d'erreur transitoires côté Mistral (surcharge temporaire, rate limit) :
+# on retente avec un backoff plutôt que de laisser toute la newsletter échouer
+# pour un aléa d'une seconde. Les autres erreurs (clé invalide, modèle non
+# autorisé, requête malformée...) ne sont pas transitoires : on les laisse
+# remonter immédiatement.
+_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+_MAX_RETRIES = 3
+_BACKOFF_SECONDS = 5
 
 SYSTEM_PROMPT = """Tu es un rédacteur tech qui prépare une newsletter quotidienne concise.
 À partir d'une liste d'articles (titre, source, lien, résumé brut), génère une newsletter
@@ -60,12 +72,20 @@ def generate_newsletter(articles, api_key=None):
     if not articles_text.strip():
         return "# Tech Daily\n\nAucun article récupéré aujourd'hui — vérifie les flux RSS."
 
-    response = client.chat.complete(
-        model=MISTRAL_MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Voici les articles du jour :\n\n{articles_text}"},
-        ],
-    )
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": f"Voici les articles du jour :\n\n{articles_text}"},
+    ]
 
-    return response.choices[0].message.content
+    for attempt in range(1, _MAX_RETRIES + 1):
+        try:
+            response = client.chat.complete(model=MISTRAL_MODEL, messages=messages)
+            return response.choices[0].message.content
+        except SDKError as e:
+            status = getattr(e, "status_code", None)
+            if status not in _RETRYABLE_STATUS_CODES or attempt == _MAX_RETRIES:
+                raise
+            wait = _BACKOFF_SECONDS * attempt
+            print(f"Erreur Mistral {status} (tentative {attempt}/{_MAX_RETRIES}), "
+                  f"nouvelle tentative dans {wait}s...")
+            time.sleep(wait)
