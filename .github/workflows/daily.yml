@@ -22,31 +22,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Générer la newsletter
-        id: generate
         env:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: |
-          set +e
-          python main.py > run_output.log 2>&1
-          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
-          set -e
-
-      # --- TEMPORAIRE : debug, à retirer une fois le modèle confirmé stable ---
-      - name: Diagnostic sortie complète (debug temporaire)
-        if: always()
-        run: |
-          python3 -c "
-          content = open('run_output.log', encoding='utf-8', errors='replace').read()
-          lines = content.splitlines()[-40:]
-          escaped = chr(10).join(lines).replace('%', '%25').replace(chr(13), '%0D').replace(chr(10), '%0A')
-          print(f'::notice title=Diagnostic run_output.log (40 dernieres lignes)::{escaped}')
-          "
-
-      - name: Faire échouer le job si la génération a échoué (debug temporaire)
-        if: steps.generate.outputs.exit_code != '0'
-        run: exit 1
-      # --- fin bloc temporaire ---
+        run: python main.py
 
       - name: Commit et push de l'archive
         run: |
