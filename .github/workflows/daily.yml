@@ -25,7 +25,18 @@ jobs:
         env:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python main.py
+        run: python main.py 2>&1 | tee run_output.log
+
+      # --- TEMPORAIRE : debug d'un échec persistant, à retirer une fois corrigé ---
+      - name: Dump du log d'erreur (debug temporaire)
+        if: failure()
+        run: |
+          git config user.name "debug-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f run_output.log
+          git commit -m "debug: dump erreur run ${{ github.run_id }}"
+          git push
+      # --- fin bloc temporaire ---
 
       - name: Commit et push de l'archive
         run: |
