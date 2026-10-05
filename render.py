@@ -289,7 +289,11 @@ def _format_date_fr(iso_date):
 
 def _keyword_from_title(title):
     """Extrait le mot-clé principal (souvent une entité) en tête d'un titre d'article."""
-    normalized = title.replace("’", "'").replace("'", " ")
+    # Les titres <h3> peuvent contenir des balises HTML internes (ex: <strong>
+    # quand le modèle génère un titre en gras) : on les retire d'abord, sinon
+    # "strong" lui-même était extrait comme mot-clé.
+    without_tags = re.sub(r"<[^>]+>", "", title)
+    normalized = without_tags.replace("’", "'").replace("'", " ")
     words = re.findall(r"[A-Za-zÀ-ÿ]+", normalized)
     for word in words:
         if word.lower() not in _LEADING_STOPWORDS:

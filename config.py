@@ -30,8 +30,12 @@ MAX_PER_FEED = 4
 # ne soit pas annulé par une troncature finale qui ne connaît que les dates.
 MAX_ARTICLES = 40
 
-# Modèle Mistral à utiliser (API gratuite sur console.mistral.ai)
-MISTRAL_MODEL = "mistral-large-latest"
+# Modèle Mistral à utiliser (API gratuite sur console.mistral.ai).
+# mistral-large-latest renvoyait une erreur 403 "tier_not_allowed" depuis le
+# 11/09/2026 (modèle non inclus dans le tier du compte) : mistral-small-latest
+# est accessible sans cette restriction. Si tu passes à un tier supérieur côté
+# Mistral, tu peux remettre "mistral-large-latest" pour une meilleure qualité.
+MISTRAL_MODEL = "mistral-small-latest"
 
 # Dossier où sont stockées les newsletters générées (sert de "plateforme" d'archives).
 # "docs" et non "newsletters" : c'est l'un des deux seuls dossiers que GitHub Pages
